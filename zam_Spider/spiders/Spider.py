@@ -2,17 +2,21 @@ import scrapy
 import time
 from zam_Spider.items import ZamSpiderItem
 
+city_name = ''
+city_code = ''
 class zam_Spider(scrapy.Spider):
     name = 'zam'
-    city_name = ''
-    city_code = ''
+
     totalNumber = 0
     Allhouseurl_List = []
     def start_requests(self):
         city_name = input('Please input the city name: ') #Faisalabad
         city_code = input('Please input the city code: ')
-        #totalNumber = int(input('Please input the number of houseInfo: '))
+        totalNumber = int(input('Please input the number of houseInfo: '))
         page_url = ['https://www.zameen.com/Homes/' + city_name + '-' + city_code + '-1' + '.html']
+        if int(totalNumber / 25) > 50:
+            for i in range(50,int(totalNumber / 25) + 1):
+                page_url.append('https://www.zameen.com/Homes/' + city_name + '-' + city_code + '-' + str(i) + '.html')
         for url in page_url:
             yield scrapy.Request(url=url, callback=self.parse) #爬取到的页面如何处理？提交给parse方法处理
 
@@ -34,7 +38,7 @@ class zam_Spider(scrapy.Spider):
         #item['Details'] = response.xpath("//div[@class='_141f596c']/div/ul/li").extract()
         Details_content = response.xpath("//div[@class='_141f596c']/div//ul/li")
         item['Type'] = Details_content[0].xpath(".//span[@class='_812aa185']/text()").extract()[0].strip()
-        item['Price'] = Details_content[1].xpath(".//span[@class='_812aa185']/text()").extract()[0].strip()
+        item['Price'] = Details_content[1].xpath(".//span[@class='_812aa185']/text()").extract()[0].strip() + ' ' + Details_content[1].xpath(".//span[@class='_812aa185']/text()").extract()[-1].strip()
         item['Location'] = Details_content[2].xpath(".//span[@class='_812aa185']/text()").extract()[0].strip()
         item['Baths'] = Details_content[3].xpath(".//span[@class='_812aa185']/text()").extract()[0].strip()
         item['Area'] = Details_content[4].xpath(".//span[@class='_812aa185']/span/text()").extract()[0].strip()
